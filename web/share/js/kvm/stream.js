@@ -473,7 +473,7 @@ export function Streamer() {
 			if (ok) {
 				const txqrDecoder = new qram.Decoder();
 				const displayDom = $("txqr-text");
-				let width = 0, height = 0;
+				let width = 0, height = 0, errorCount = 0;
 				let stream_mjpeg_img, stream_canvas, canvas_ctx, video = null;
 
 				stopTxQrTransHandler.txqrDecoder = txqrDecoder;
@@ -527,14 +527,21 @@ export function Streamer() {
 					// use qr-code reader of choice to get Uint8Array or Uint8ClampedArray
 					// representing the packet
 					try {
-						const {data: text} = jsQR(imageData.data, imageData.width, imageData.height);
+						const data = jsQR(imageData.data, imageData.width, imageData.height);
+						if (!data) {
+							// no QR code found, reschedule to get another packet
+							errorCount++;
+							stopTxQrTransHandler.cancelAnimationFrameHandler = requestAnimationFrame(enqueue);
+							return;
+						}
+						const text = data.text;
 						// enqueue the packet data for decoding, ignoring any errors
 						// and rescheduling until done or aborted
 						txqrDecoder.enqueue(base64url.decode(text)).then(progress => {
 							// show progress, e.g. `progress.receivedBlocks / progress.totalBlocks`,
 							// to user somehow ...
 							if(progress && progress.receivedBlocks && progress.totalBlocks) {
-								displayDom.innerHTML = `TxQr传输开始, 进度: ${progress.receivedBlocks} / ${progress.totalBlocks}`;
+								displayDom.innerHTML = `TxQr传输开始, 进度: ${progress.receivedBlocks} / ${progress.totalBlocks}, 错误数: ${errorCount}`;
 							}
 							if(progress && !progress.done) {
 								// not done yet, schedule to get another packet
