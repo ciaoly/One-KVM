@@ -534,7 +534,7 @@ export function Streamer() {
 							stopTxQrTransHandler.cancelAnimationFrameHandler = requestAnimationFrame(enqueue);
 							return;
 						}
-						const text = data.text;
+						const text = data.data;
 						// enqueue the packet data for decoding, ignoring any errors
 						// and rescheduling until done or aborted
 						txqrDecoder.enqueue(base64url.decode(text)).then(progress => {
