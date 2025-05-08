@@ -36,6 +36,7 @@ import {Streamer} from "./stream.js";
 import {Gpio} from "./gpio.js";
 import {Ocr} from "./ocr.js";
 import {Switch} from "./switch.js";
+import {TxQR} from "./txqr.js";
 
 
 export function Session() {
@@ -57,6 +58,7 @@ export function Session() {
 	var __gpio = new Gpio(__recorder);
 	var __ocr = new Ocr(__streamer.getGeometry);
 	var __switch = new Switch();
+	var __txqr = new TxQR();
 
 	var __info_hw_state = null;
 	var __info_fan_state = null;
