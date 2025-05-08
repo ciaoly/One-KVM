@@ -518,7 +518,7 @@ export function Streamer() {
 					}else if(stream_type == "janus"){
 						data = qram.getImageData(video);
 					}
-					return {data, width, height};
+					return data;
 				}
 
 				stopTxQrTransHandler.cancelAnimationFrameHandler = requestAnimationFrame(function enqueue() {
@@ -526,24 +526,30 @@ export function Streamer() {
 					const imageData = getImageData();
 					// use qr-code reader of choice to get Uint8Array or Uint8ClampedArray
 					// representing the packet
-					const {data: text} = jsQR(imageData.data, imageData.width, imageData.height);
-					// enqueue the packet data for decoding, ignoring any errors
-					// and rescheduling until done or aborted
-					txqrDecoder.enqueue(base64url.decode(text)).then(progress => {
-						// show progress, e.g. `progress.receivedBlocks / progress.totalBlocks`,
-						// to user somehow ...
-						if(progress && progress.receivedBlocks && progress.totalBlocks) {
-							displayDom.innerHTML = `TxQr传输开始, 进度: ${progress.receivedBlocks} / ${progress.totalBlocks}`;
-						}
-						if(progress && !progress.done) {
-							// not done yet, schedule to get another packet
-							stopTxQrTransHandler.cancelAnimationFrameHandler = requestAnimationFrame(enqueue);
-						}
-					}).catch(e => {
-						if (e.name != 'AbortError') {
-							stopTxQrTransHandler.cancelAnimationFrameHandler = requestAnimationFrame(enqueue)
-						}
-					});
+					try {
+						const {data: text} = jsQR(imageData.data, imageData.width, imageData.height);
+						// enqueue the packet data for decoding, ignoring any errors
+						// and rescheduling until done or aborted
+						txqrDecoder.enqueue(base64url.decode(text)).then(progress => {
+							// show progress, e.g. `progress.receivedBlocks / progress.totalBlocks`,
+							// to user somehow ...
+							if(progress && progress.receivedBlocks && progress.totalBlocks) {
+								displayDom.innerHTML = `TxQr传输开始, 进度: ${progress.receivedBlocks} / ${progress.totalBlocks}`;
+							}
+							if(progress && !progress.done) {
+								// not done yet, schedule to get another packet
+								stopTxQrTransHandler.cancelAnimationFrameHandler = requestAnimationFrame(enqueue);
+							}
+						}).catch(e => {
+							if (e.name != 'AbortError') {
+								stopTxQrTransHandler.cancelAnimationFrameHandler = requestAnimationFrame(enqueue)
+							}
+						});
+					} catch (e) {
+						console.error(e);
+						__clickTxqrStopButton();
+						wm.error(`TxQr传输时出错, 详情请查看控制台日志. 参考信息: <br> ${e.message}`);
+					}
 				});
 
 				txqrDecoder.decode().then(res => {
