@@ -122,6 +122,9 @@
     "kvm_text89":"Unpackage files from image",
     "kvm_text90":"ImageFiles",
     "kvm_text91":"NormalFiles",
+    "kvm_text92":"TXQR Transfer",
+    "kvm_text93":"Transfer files using dynamic QR codes. You need to run a dynamic QR code encoder on the target host.",
+
 
     "atx-ask-switch":"Ask click confirmation",
     "hid-recorder-loop-switch":"Infinite loop playback",
